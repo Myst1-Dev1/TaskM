@@ -9,6 +9,7 @@ import { Input } from '@/components/input';
 
 export function OpenModal() {
     const [isVisibleModal, setIsVisibleModal] = useState(false);
+    const [date, setDate] = useState('');
 
     return (
         <>
@@ -22,7 +23,14 @@ export function OpenModal() {
                         <Input placeholder='Nome da tarefa' />
                         <Input placeholder='Descrição da tarefa' />
                         <Input placeholder='Tipo de tarefa' />
-                        <Input placeholder='Data de criação da tarefa' />
+                        <Input
+                            value={date}
+                            onChangeText={setDate}
+                            placeholder='Data de criação da tarefa' mask={{
+                                type: 'datetime',
+                                options: { format: 'DD/MM/YYYY' }
+                            }} 
+                        />
                         <Button>
                             <Button.Title>Enviar</Button.Title>
                         </Button>

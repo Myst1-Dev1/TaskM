@@ -4,7 +4,11 @@ import { fontFamily } from "@/styles/theme";
 export const s = StyleSheet.create({
     container:{
         paddingHorizontal:20,
-        marginTop:30
+        marginTop:30,
+        flex:1,
+        flexDirection:'column',
+        justifyContent:'center',
+        alignContent:'center',
     },
     title: {
         fontSize:24,
