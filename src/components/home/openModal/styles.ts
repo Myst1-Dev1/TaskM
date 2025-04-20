@@ -19,5 +19,14 @@ export const s = StyleSheet.create({
         flexDirection:'column',
         gap:30,
         marginTop:30
+    },
+    textArea: {
+        paddingHorizontal:12, 
+        width:'100%', 
+        height: 100, 
+        borderRadius:12, 
+        borderWidth:1, 
+        borderColor:'#DAD5D5',
+        textAlignVertical: 'top'
     }
 })

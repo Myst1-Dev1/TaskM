@@ -1,21 +1,28 @@
 import { Alert, Image, Text, View } from "react-native";
 import { colors, fontFamily } from "@/styles/theme";
-import { IconLock, IconUser } from "@tabler/icons-react-native";
+import { IconLock, IconMail } from "@tabler/icons-react-native";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { router } from "expo-router";
 import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from '@/services/firebase';
 
 export default function SignIn() {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    function handleLogin() {
-        console.log(username, password);
-
-        Alert.alert(username, password);
-
-        router.navigate('/home');
+    async function handleLogin() {
+        try {
+            setLoading(true);
+            await signInWithEmailAndPassword(auth, email, password)
+            router.navigate('/home');
+        } catch (error) {
+            Alert.alert('Error', 'Falha ao fazer login.');
+        } finally { 
+            setLoading(false) 
+        }
     }
 
     return (
@@ -24,9 +31,9 @@ export default function SignIn() {
                 <Image source={require('@/assets/Mobile login-bro.png')} style={{width:'100%', height:250, objectFit:'cover'}} />
                 <Text style={{marginTop:40, fontSize:22, fontFamily:fontFamily.bold, textAlign:'center'}}>Bem vindo de volta</Text>
                 <View style={{marginTop:30, flexDirection:'column', gap:30}}>
-                    <Input icon={IconUser} placeholder="Username" value={username} onChangeText={setUsername} />
+                    <Input icon={IconMail} placeholder="Email" value={email} onChangeText={setEmail} />
                     <Input icon={IconLock} placeholder="Senha" secureTextEntry value={password} onChangeText={setPassword} />
-                    <Button onPress={handleLogin} style={{borderRadius:6}}>
+                    <Button isLoading={loading} onPress={handleLogin} style={{borderRadius:6}}>
                         <Button.Title>Entrar</Button.Title>
                     </Button>
                     <View style={{

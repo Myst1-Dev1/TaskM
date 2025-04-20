@@ -3,6 +3,8 @@ import { Calendar as Day, LocaleConfig } from 'react-native-calendars';
 import { s } from "./styles";
 
 import { useState } from "react";
+import { TasksType } from "@/app/home";
+import { Tasks } from "../tasks";
 
 LocaleConfig.locales['pt'] = {
     monthNames: [
@@ -16,26 +18,57 @@ LocaleConfig.locales['pt'] = {
   };
   LocaleConfig.defaultLocale = 'pt';
 
-export function Calendar() {
-    const [selectedDate, setSelectedDate] = useState(18);
+interface CalendarProps {
+    tasks: TasksType[]
+}
+
+export function Calendar({ tasks }:CalendarProps) {
+    const [selectedDate, setSelectedDate] = useState(() => {
+        const today = new Date();
+        return today.toISOString().split('T')[0]; // formato '2025-04-21'
+    });
+    
+    const filteredTasks = tasks.filter(task => {
+        const taskDate = task.createdAt.split('/').reverse().join('-'); // de "20/04/2025" → "2025-04-20"
+        return taskDate === selectedDate;
+    });
+
+    const markedDates = tasks.reduce((acc, task) => {
+        const taskDate = task.createdAt.split('/').reverse().join('-');
+      
+        if (!acc[taskDate]) {
+          acc[taskDate] = {
+            dots: [{ color: '#22C55E' }],
+          };
+        }
+      
+        return acc;
+      }, {} as Record<string, any>);
+      
+      // Garante que o dia selecionado esteja marcado em verde
+      markedDates[selectedDate] = {
+        ...(markedDates[selectedDate] || {}),
+        selected: true,
+        selectedColor: '#22C55E',
+    };      
 
     return (
         <>
             <View style={s.container}>
-                <Day
-                    onDayPress={(day:any) => {
-                        setSelectedDate(day.dateString);
-                    }}
-                    markedDates={{
-                    [selectedDate]: { selected: true, selectedColor: '#22C55E' },
-                    }}
-                    theme={{
+            <Day
+                onDayPress={(day: any) => {
+                    setSelectedDate(day.dateString);
+                }}
+                markedDates={markedDates}
+                markingType="multi-dot" // <- importante para exibir pontinhos
+                theme={{
                     selectedDayBackgroundColor: '#22C55E',
                     todayTextColor: '#22C55E',
                     arrowColor: '#22C55E',
-                    }}
-                />
+                }}
+            />
             </View>
+            <Tasks tasks={filteredTasks} />
         </>
     )
 }

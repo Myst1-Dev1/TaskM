@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1086868644754",
+    "project_id": "taskm-b1902",
+    "storage_bucket": "taskm-b1902.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1086868644754:android:6d0ccdab4d2843bf63174b",
+        "android_client_info": {
+          "package_name": "com.taskM.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOIAUDme-BP-PiM-EDP9TIMefuvPTf7fg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

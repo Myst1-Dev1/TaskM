@@ -3,13 +3,18 @@ import { Image, Text, View } from "react-native";
 import { s } from "./style";
 import { IconBell, IconMoon } from "@tabler/icons-react-native";
 
-export function HomeHeader() {
+interface HomeHeaderProps {
+    username:string;
+}
+
+export function HomeHeader({ username }:HomeHeaderProps) {
+
     return (
         <>
             <View style={s.container}>
                 <View style={s.userBox}>
-                    <Image source={require('@/assets/imageUser.png')} style={s.image}/>
-                    <Text style={s.username}>John Doe</Text>
+                    <Image source={require('@/assets/profileUserIcon.png')} style={s.image}/>
+                    <Text style={s.username}>{username}</Text>
                 </View>
                 <View style={s.iconsBox}>
                     <IconBell size={25} color={'#fff'} />

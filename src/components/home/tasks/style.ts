@@ -17,6 +17,15 @@ export const s = StyleSheet.create({
         borderColor:colors.gray[400],
         borderRadius:50
     },
+    taskCompleted: {
+        width:40,
+        height:40,
+        backgroundColor:colors.green[500],
+        borderRadius:50,
+        flexDirection:'row',
+        justifyContent:'center',
+        alignItems:'center'
+    },
     title: {
         fontSize:16,
         fontFamily:fontFamily.bold
@@ -32,6 +41,7 @@ export const s = StyleSheet.create({
         textAlign: 'center',
         backgroundColor: colors.green[300],
         borderRadius: 6,
+        color:'#fff',
         alignSelf: 'flex-start', // <- opcional, se estiver dentro de View com `alignItems: 'stretch'`
       },
     date: {
