@@ -8,5 +8,8 @@ export const colors = {
         300: '#86EFAC',
         500: '#22C55E',
         600: '#16A34A',
+    },
+    red: {
+        600: '#dc2626'
     }
 }

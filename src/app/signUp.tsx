@@ -10,26 +10,25 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase';
 import { useState } from "react";
 
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signUpSchema } from "@/services/zod";
+
 export default function SignUp() {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    async function handleSignUp() {
-        if (password !== confirmPassword) {
-            Alert.alert('Erro', 'As senhas não coincidem.');
-            return;
-        }
+    const { control, reset, handleSubmit, formState: { errors } } = useForm({
+        resolver:zodResolver(signUpSchema)
+    })
 
+    async function handleSignUp(data:any) {
         try {
             setLoading(true);
 
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
             const { uid } = userCredential.user;
+            const { username, email } = data;
 
-            // Salvar username no Firestore
             await setDoc(doc(db, 'users', uid), {
                 username,
                 email,
@@ -38,7 +37,8 @@ export default function SignUp() {
 
             Alert.alert('Sucesso', 'Conta criada.');
 
-            router.navigate('/signIn'); // redireciona para a home ou onde quiser
+            router.navigate('/signIn');
+            reset();
         } catch (error: any) {
             console.error(error);
             Alert.alert('Erro ao criar conta', error.message);
@@ -56,11 +56,35 @@ export default function SignUp() {
                 <Image source={require('@/assets/Mobile login-bro.png')} style={{width:'100%', height:250, objectFit:'cover'}} />
                 <Text style={{marginTop:40, fontSize:22, fontFamily:fontFamily.bold, textAlign:'center'}}>Crie sua conta e comece a gerenciar suas tarefas</Text>
                 <View style={{marginTop:30, flexDirection:'column', gap:30}}>
-                    <Input icon={IconUser} placeholder="Username" value={username} onChangeText={setUsername} />
-                    <Input icon={IconMail} placeholder="Email" value={email} onChangeText={setEmail} />
-                    <Input icon={IconLock} placeholder="Senha" secureTextEntry value={password} onChangeText={setPassword} />
-                    <Input icon={IconLock} placeholder="Confirme a Senha" secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
-                    <Button isLoading={loading} onPress={handleSignUp} style={{borderRadius:6}}>
+                    <Controller 
+                        name="username"
+                        control={control}
+                        render={({field:{value, onChange}}) => <Input icon={IconUser} placeholder="Nome de usuário" value={value} onChangeText={onChange} />}
+                    />
+                    {errors.username && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.username.message}</Text>}
+                    
+                    <Controller 
+                        name="email"
+                        control={control}
+                        render={({field:{value, onChange}}) => <Input icon={IconMail} placeholder="Email" value={value} onChangeText={onChange} />}
+                    />
+                    {errors.email && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.email.message}</Text>}
+
+                    <Controller 
+                        name="password"
+                        control={control}
+                        render={({field:{value, onChange}}) => <Input secureTextEntry icon={IconLock} placeholder="Senha" value={value} onChangeText={onChange} />}
+                    />
+                    {errors.password && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.password.message}</Text>}
+
+                    <Controller 
+                        name="confirmPassword"
+                        control={control}
+                        render={({field:{value, onChange}}) => <Input secureTextEntry icon={IconLock} placeholder="Confirme a senha" value={value} onChangeText={onChange} />}
+                    />
+                    {errors.confirmPassword && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.confirmPassword.message}</Text>}
+
+                    <Button isLoading={loading} onPress={handleSubmit(handleSignUp)} style={{borderRadius:6}}>
                         <Button.Title>Cadastrar</Button.Title>
                     </Button>
                     <View style={{

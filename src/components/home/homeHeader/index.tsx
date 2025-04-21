@@ -1,13 +1,21 @@
-import { Image, Text, View } from "react-native";
+import { Alert, Image, Text, View } from "react-native";
 
 import { s } from "./style";
-import { IconBell, IconMoon } from "@tabler/icons-react-native";
+import { IconBell, IconLogout, IconMoon } from "@tabler/icons-react-native";
+import { auth } from "@/services/firebase";
+import { router } from "expo-router";
 
 interface HomeHeaderProps {
     username:string;
 }
 
 export function HomeHeader({ username }:HomeHeaderProps) {
+
+    async function handleSignOut() {
+        await auth.signOut();
+
+        router.navigate('/signIn');
+    }
 
     return (
         <>
@@ -19,6 +27,7 @@ export function HomeHeader({ username }:HomeHeaderProps) {
                 <View style={s.iconsBox}>
                     <IconBell size={25} color={'#fff'} />
                     <IconMoon size={25} color={'#fff'} />
+                    <IconLogout onPress={handleSignOut} size={25} color={'#fff'} />
                 </View>
             </View>
         </>

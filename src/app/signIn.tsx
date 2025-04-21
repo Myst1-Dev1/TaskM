@@ -8,20 +8,27 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from '@/services/firebase';
 
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signInSchema } from "@/services/zod";
+
 export default function SignIn() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    async function handleLogin() {
+    const { control, reset, handleSubmit, formState: { errors } } = useForm({
+        resolver:zodResolver(signInSchema)
+    })
+
+    async function handleLogin(data:any) {
         try {
             setLoading(true);
-            await signInWithEmailAndPassword(auth, email, password)
+            await signInWithEmailAndPassword(auth, data.email, data.password)
             router.navigate('/home');
+            reset();
         } catch (error) {
             Alert.alert('Error', 'Falha ao fazer login.');
         } finally { 
-            setLoading(false) 
+            setLoading(false);
         }
     }
 
@@ -31,9 +38,19 @@ export default function SignIn() {
                 <Image source={require('@/assets/Mobile login-bro.png')} style={{width:'100%', height:250, objectFit:'cover'}} />
                 <Text style={{marginTop:40, fontSize:22, fontFamily:fontFamily.bold, textAlign:'center'}}>Bem vindo de volta</Text>
                 <View style={{marginTop:30, flexDirection:'column', gap:30}}>
-                    <Input icon={IconMail} placeholder="Email" value={email} onChangeText={setEmail} />
-                    <Input icon={IconLock} placeholder="Senha" secureTextEntry value={password} onChangeText={setPassword} />
-                    <Button isLoading={loading} onPress={handleLogin} style={{borderRadius:6}}>
+                    <Controller 
+                        control={control}
+                        name="email"
+                        render={({field:{value, onChange}}) => <Input icon={IconMail} placeholder="Email" value={value} onChangeText={onChange} />}
+                    />
+                    {errors.email && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.email.message}</Text>}
+                     <Controller 
+                        control={control}
+                        name="password"
+                        render={({field:{value, onChange}}) => <Input icon={IconLock} placeholder="Senha" secureTextEntry value={value} onChangeText={onChange} />}
+                    />
+                    {errors.password && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.password.message}</Text>}
+                    <Button isLoading={loading} onPress={handleSubmit(handleLogin)} style={{borderRadius:6}}>
                         <Button.Title>Entrar</Button.Title>
                     </Button>
                     <View style={{
