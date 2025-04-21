@@ -1,4 +1,4 @@
-import { Alert, Image, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
 import { s } from "./style";
 import { IconBell, IconLogout, IconMoon } from "@tabler/icons-react-native";
@@ -7,9 +7,10 @@ import { router } from "expo-router";
 
 interface HomeHeaderProps {
     username:string;
+    isFetching: boolean;
 }
 
-export function HomeHeader({ username }:HomeHeaderProps) {
+export function HomeHeader({ username, isFetching }:HomeHeaderProps) {
 
     async function handleSignOut() {
         await auth.signOut();
@@ -22,7 +23,7 @@ export function HomeHeader({ username }:HomeHeaderProps) {
             <View style={s.container}>
                 <View style={s.userBox}>
                     <Image source={require('@/assets/profileUserIcon.png')} style={s.image}/>
-                    <Text style={s.username}>{username}</Text>
+                    <Text style={s.username}>{isFetching ? 'Carregando...' : username}</Text>
                 </View>
                 <View style={s.iconsBox}>
                     <IconBell size={25} color={'#fff'} />

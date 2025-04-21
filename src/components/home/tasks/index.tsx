@@ -7,23 +7,29 @@ import { IconCheck } from "@tabler/icons-react-native";
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 interface TasksProps {
     tasks: TasksType[]
 }
 
 export function Tasks({ tasks }:TasksProps) {
+    const queryClient = useQueryClient();
 
-    async function toggleTaskStatus(taskId: string, currentStatus: boolean) {
-        try {
-          const taskRef = doc(db, 'tasks', taskId);
-          await updateDoc(taskRef, {
-            status: !currentStatus,
-          });
-          console.log('Status atualizado com sucesso!');
-        } catch (error) {
-          console.error('Erro ao atualizar status:', error);
+    const { mutate: toggleTaskStatus, isPending } = useMutation({
+        mutationFn: async ({ taskId, currentStatus }: { taskId: string; currentStatus: boolean }) => {
+            const taskRef = doc(db, 'tasks', taskId);
+            await updateDoc(taskRef, {
+                status: !currentStatus,
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        },
+        onError: (error) => {
+            console.error('Erro ao atualizar status:', error);
         }
-    }
+    });
 
     return (
         <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
@@ -36,9 +42,9 @@ export function Tasks({ tasks }:TasksProps) {
                 <View style={s.container}>
                     <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
                         {item.status === true ? 
-                            <TouchableOpacity style={s.taskCompleted}><IconCheck size={30} color={'#fff'} /></TouchableOpacity> 
+                            isPending ? 'carregando...' : <TouchableOpacity style={s.taskCompleted}><IconCheck size={30} color={'#fff'} /></TouchableOpacity> 
                             : 
-                            <TouchableOpacity style={s.check} onPress={() => toggleTaskStatus(item.id, item.status)} />
+                            <TouchableOpacity style={s.check} onPress={() => toggleTaskStatus({ taskId: item.id, currentStatus: item.status })} />
                         }
                         <Text style={s.title}>{item.title}</Text>
                     </View>

@@ -1,9 +1,9 @@
 import { Calendar } from "@/components/home/calendar";
 import { HomeHeader } from "@/components/home/homeHeader";
 import { OpenModal } from "@/components/home/openModal";
-import { useEffect, useState } from 'react';
 import { auth, db } from '@/services/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { useQuery } from "@tanstack/react-query";
 
 export type TasksType = {
     id:string
@@ -17,52 +17,55 @@ export type TasksType = {
 }
 
 export default function Home() {
-    const [username, setUsername] = useState('');
-    const [tasks, setTasks] = useState<TasksType[]>([]);
     const user = auth.currentUser;
 
-    useEffect(() => {
-        async function fetchUsername() {
-        if (user) {
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
+    async function fetchUsername() {
+      if (!user) return null;
+    
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+    
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        return data.username;
+      }
+    
+      return null;
+    }
 
-            if (userDoc.exists()) {
-            const data = userDoc.data();
-            setUsername(data.username);
-            }
-        }
-        }
+    async function fetchTasks(): Promise<TasksType[]> {
+      if (!user) return [];
+    
+      const q = query(
+        collection(db, 'tasks'),
+        where('userId', '==', user.uid)
+      );
+    
+      const querySnapshot = await getDocs(q);
+      const taskList: TasksType[] = [];
+    
+      querySnapshot.forEach((doc) => {
+        taskList.push({ id: doc.id, ...doc.data() } as TasksType);
+      });
+    
+      return taskList;
+    }    
 
-        fetchUsername();
-    }, []);
+    const { data:username, isFetching } = useQuery({
+      queryKey: ['user'],
+      queryFn: async () => fetchUsername()
+    });
 
-    useEffect(() => {
-        async function fetchTasks() {
-          if (user) {
-            const q = query(
-              collection(db, 'tasks'),
-              where('userId', '==', user.uid)
-            );
-      
-            const querySnapshot = await getDocs(q);
-            const taskList: any[] = [];
-      
-            querySnapshot.forEach((doc) => {
-              taskList.push({ id: doc.id, ...doc.data() });
-            });
-      
-            setTasks(taskList);
-          }
-        }
-      
-        fetchTasks();
-      }, []);
+    const { data: tasks, isLoading } = useQuery<TasksType[]>({
+      queryKey: ['tasks'],
+      queryFn: fetchTasks,
+      enabled: !!user,
+    });
 
     return (
         <>
-            <HomeHeader username = {username} />
-            <Calendar tasks = {tasks} />
+            <HomeHeader username = {username} isFetching = {isFetching} />
+            <Calendar tasks = {tasks} isLoading = {isLoading} />
             <OpenModal />
         </>
     )

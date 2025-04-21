@@ -19,21 +19,22 @@ LocaleConfig.locales['pt'] = {
   LocaleConfig.defaultLocale = 'pt';
 
 interface CalendarProps {
-    tasks: TasksType[]
+    tasks: TasksType[] | any;
+    isLoading: boolean;
 }
 
-export function Calendar({ tasks }:CalendarProps) {
+export function Calendar({ tasks, isLoading }:CalendarProps) {
     const [selectedDate, setSelectedDate] = useState(() => {
         const today = new Date();
         return today.toISOString().split('T')[0]; // formato '2025-04-21'
     });
     
-    const filteredTasks = tasks.filter(task => {
+    const filteredTasks = tasks.filter((task:any) => {
         const taskDate = task.createdAt.split('/').reverse().join('-'); // de "20/04/2025" → "2025-04-20"
         return taskDate === selectedDate;
     });
 
-    const markedDates = tasks.reduce((acc, task) => {
+    const markedDates = tasks.reduce((acc:any, task:any) => {
         const taskDate = task.createdAt.split('/').reverse().join('-');
       
         if (!acc[taskDate]) {
@@ -68,7 +69,7 @@ export function Calendar({ tasks }:CalendarProps) {
                 }}
             />
             </View>
-            <Tasks tasks={filteredTasks} />
+            {isLoading ? 'Carregando...' : <Tasks tasks={filteredTasks} />}
         </>
     )
 }

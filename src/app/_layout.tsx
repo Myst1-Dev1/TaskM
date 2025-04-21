@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView} from "react-native-gesture-handler";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 import { 
     useFonts,
@@ -10,6 +11,7 @@ import {
     Karla_300Light,
  } from '@expo-google-fonts/karla';
 import { Loading } from '@/components/loading';
+import { queryClient } from '@/services/queryClient';
 
 export default function Layout() {
     const [fontsLoaded] = useFonts({
@@ -24,9 +26,17 @@ export default function Layout() {
 
     return (
         <>
-            <GestureHandlerRootView style={{flex:1}}>
-                <Stack screenOptions={{ headerShown:false, contentStyle:{ backgroundColor: "#fff" }}} />
-            </GestureHandlerRootView>
+            <QueryClientProvider client={queryClient}>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                    <Stack 
+                    screenOptions={{ 
+                        headerShown: false, 
+                        contentStyle: { backgroundColor: "#fff" } 
+                    }} 
+                    />
+                </GestureHandlerRootView>
+            </QueryClientProvider>
+
         </>
     )
 }
