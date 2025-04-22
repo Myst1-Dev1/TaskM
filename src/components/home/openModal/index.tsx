@@ -17,6 +17,8 @@ import { modalSchema } from '@/services/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useThemeMode } from '@/hooks/useThemeMode';
 
+import * as Notifications from 'expo-notifications';
+
 export function OpenModal() {
     const [isVisibleModal, setIsVisibleModal] = useState(false);
     const { theme } = useThemeMode();
@@ -27,18 +29,41 @@ export function OpenModal() {
 
     const queryClient = useQueryClient();
 
-    const { mutate: createTask, isPending } = useMutation({
-        mutationFn: async (data: any) => {
-            const user = auth.currentUser;
+    async function scheduleTaskNotification(task: {
+        title: string;
+        date: string;
+      }) {
+        const [day, month, year] = task.date.split('/').map(Number);
+        const taskDate = new Date(year, month - 1, day, 9, 0);
+      
+        if (taskDate > new Date()) {
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: '📌 Tarefa de hoje!',
+              body: `A tarefa "${task.title}" está marcada para hoje às 09:00.`,
+              sound: true,
+            },
+            trigger: taskDate as unknown as Notifications.NotificationTriggerInput,
+          });
+      
+          console.log('🔔 Notificação agendada para:', taskDate);
+        } else {
+          console.log('⚠️ Data já passou ou é agora — notificação não agendada.');
+        }
+      }
 
-            if (!user) {
+      const { mutate: createTask, isPending } = useMutation({
+        mutationFn: async (data: any) => {
+          const user = auth.currentUser;
+      
+          if (!user) {
             console.warn('Usuário não está logado.');
             return;
-            }
-
-            const { taskTitle, taskDescription, taskType, taskDate } = data;
-
-            await addDoc(collection(db, 'tasks'), {
+          }
+      
+          const { taskTitle, taskDescription, taskType, taskDate } = data;
+      
+          const docRef = await addDoc(collection(db, 'tasks'), {
             title: taskTitle,
             description: taskDescription,
             type: taskType,
@@ -46,59 +71,32 @@ export function OpenModal() {
             createdAt: taskDate,
             done: false,
             userId: user.uid,
-            });
+          });
+      
+          await scheduleTaskNotification({
+            title: taskTitle,
+            date: taskDate,
+          });
+      
+          return docRef;
         },
         onSuccess: () => {
-            Alert.alert('Tarefa', 'Criada com sucesso!');
-            queryClient.invalidateQueries({ queryKey: ['tasks'] });
-            setIsVisibleModal(false);
-            reset();
+          Alert.alert('Tarefa', 'Criada com sucesso!');
+          queryClient.invalidateQueries({ queryKey: ['tasks'] });
+          setIsVisibleModal(false);
+          reset();
         },
-        onError: (error:any) => {
-            console.error('Erro ao criar tarefa:', error);
+        onError: (error: any) => {
+          console.error('Erro ao criar tarefa:', error);
         }
-    });
-
-    // async function handleCreateTask(data:any) {
-    //     const user = auth.currentUser;
-      
-    //     if (!user) {
-    //       console.warn('Usuário não está logado.');
-    //       return;
-    //     }
-      
-    //     try {
-    //       setLoading(true);
-
-    //       const { taskTitle, taskDescription, taskType, taskDate } = data;
-
-    //       await addDoc(collection(db, 'tasks'), {
-    //         title: taskTitle,
-    //         description:taskDescription,
-    //         type:taskType,
-    //         status:false,
-    //         createdAt: taskDate,
-    //         done: false,
-    //         userId: user.uid,
-    //       });
-      
-    //       Alert.alert('Tarefa','criada com sucesso!');
-    //       setIsVisibleModal(false);
-    //       reset();
-          
-    //     } catch (error) {
-    //       console.error('Erro ao criar tarefa:', error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    //   }
+      });
 
     return (
         <>
             <Button onPress={() => setIsVisibleModal(true)} style={{position:'absolute', right:10, bottom:20, width:40, height:40, borderRadius:50}}>
                 <Button.Icon icon={IconPlus}/>
             </Button>
-            <Modal style={{flex:1}} visible={isVisibleModal}>
+            <Modal style={{flex:1}} visible={isVisibleModal} transparent animationType="fade">
                 <View style={[s.container, { backgroundColor:theme.background }]}>
                     <Text style={[s.title, { color:theme.text }]}>Criar tarefa</Text>
                     <View style={s.form}>

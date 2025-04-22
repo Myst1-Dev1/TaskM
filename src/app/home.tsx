@@ -6,6 +6,7 @@ import { auth } from '@/services/firebase';
 import { router } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
+import { NotificationModal } from "@/components/notificationModal";
 
 export default function Home() {
   const [isAuthChecked, setIsAuthChecked] = useState(false);
@@ -15,15 +16,14 @@ export default function Home() {
       if (!user) {
         router.replace("/signIn");
       } else {
-        setIsAuthChecked(true); // Usuário logado, podemos mostrar a home
+        setIsAuthChecked(true);
       }
     });
-
+  
     return unsubscribe;
   }, []);
 
   if (!isAuthChecked) {
-    // Enquanto a autenticação está sendo verificada, mostra um loading
     return (
       <Loading />
     );
@@ -34,6 +34,7 @@ export default function Home() {
       <HomeHeader />
       <Calendar />
       <OpenModal />
+      <NotificationModal />
     </>
   );
 }
