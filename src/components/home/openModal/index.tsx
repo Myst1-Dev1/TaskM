@@ -10,74 +10,109 @@ import { auth, db } from '@/services/firebase';
 import { s } from './styles';
 import { Input } from '@/components/input';
 import { colors, fontFamily } from '@/styles/theme';
-import { router } from 'expo-router';
 
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { modalSchema } from '@/services/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useThemeMode } from '@/hooks/useThemeMode';
 
 export function OpenModal() {
     const [isVisibleModal, setIsVisibleModal] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const { theme } = useThemeMode();
 
      const { control, reset, handleSubmit, formState: { errors } } = useForm({
         resolver:zodResolver(modalSchema)
     })
 
-    async function handleCreateTask(data:any) {
-        const user = auth.currentUser;
-      
-        if (!user) {
-          console.warn('Usuário não está logado.');
-          return;
-        }
-      
-        try {
-          setLoading(true);
+    const queryClient = useQueryClient();
 
-          const { taskTitle, taskDescription, taskType, taskDate } = data;
+    const { mutate: createTask, isPending } = useMutation({
+        mutationFn: async (data: any) => {
+            const user = auth.currentUser;
 
-          await addDoc(collection(db, 'tasks'), {
+            if (!user) {
+            console.warn('Usuário não está logado.');
+            return;
+            }
+
+            const { taskTitle, taskDescription, taskType, taskDate } = data;
+
+            await addDoc(collection(db, 'tasks'), {
             title: taskTitle,
-            description:taskDescription,
-            type:taskType,
-            status:false,
+            description: taskDescription,
+            type: taskType,
+            status: false,
             createdAt: taskDate,
             done: false,
             userId: user.uid,
-          });
-      
-          Alert.alert('Tarefa','criada com sucesso!');
-          router.back();
-          reset();
-          
-        } catch (error) {
-          console.error('Erro ao criar tarefa:', error);
-        } finally {
-            setLoading(false);
+            });
+        },
+        onSuccess: () => {
+            Alert.alert('Tarefa', 'Criada com sucesso!');
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            setIsVisibleModal(false);
+            reset();
+        },
+        onError: (error:any) => {
+            console.error('Erro ao criar tarefa:', error);
         }
-      }
+    });
+
+    // async function handleCreateTask(data:any) {
+    //     const user = auth.currentUser;
+      
+    //     if (!user) {
+    //       console.warn('Usuário não está logado.');
+    //       return;
+    //     }
+      
+    //     try {
+    //       setLoading(true);
+
+    //       const { taskTitle, taskDescription, taskType, taskDate } = data;
+
+    //       await addDoc(collection(db, 'tasks'), {
+    //         title: taskTitle,
+    //         description:taskDescription,
+    //         type:taskType,
+    //         status:false,
+    //         createdAt: taskDate,
+    //         done: false,
+    //         userId: user.uid,
+    //       });
+      
+    //       Alert.alert('Tarefa','criada com sucesso!');
+    //       setIsVisibleModal(false);
+    //       reset();
+          
+    //     } catch (error) {
+    //       console.error('Erro ao criar tarefa:', error);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    //   }
 
     return (
         <>
-            <Button onPress={() => setIsVisibleModal(true)} style={{position:'absolute', right:4, bottom:20, width:40, height:40, borderRadius:50}}>
+            <Button onPress={() => setIsVisibleModal(true)} style={{position:'absolute', right:10, bottom:20, width:40, height:40, borderRadius:50}}>
                 <Button.Icon icon={IconPlus}/>
             </Button>
             <Modal style={{flex:1}} visible={isVisibleModal}>
-                <View style={s.container}>
-                    <Text style={s.title}>Criar tarefa</Text>
+                <View style={[s.container, { backgroundColor:theme.background }]}>
+                    <Text style={[s.title, { color:theme.text }]}>Criar tarefa</Text>
                     <View style={s.form}>
                         <Controller 
                             name='taskTitle'
                             control={control}
-                            render={({field:{value, onChange}}) => <Input placeholder='Nome da tarefa' value={value} onChangeText={onChange} />}
+                            render={({field:{value, onChange}}) => <Input style={{color:theme.text}} placeholder='Nome da tarefa' value={value} onChangeText={onChange} />}
                         />
                         {errors.taskTitle && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.taskTitle.message}</Text>}
 
                         <Controller 
                             name='taskType'
                             control={control}
-                            render={({field:{value, onChange}}) => <Input placeholder='Tipo de tarefa' value={value} onChangeText={onChange} />}
+                            render={({field:{value, onChange}}) => <Input style={{color:theme.text}} placeholder='Tipo de tarefa' value={value} onChangeText={onChange} />}
                         />
                         {errors.taskType && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.taskType.message}</Text>}
 
@@ -86,6 +121,7 @@ export function OpenModal() {
                             control={control}
                             render={({field:{value, onChange}}) => 
                                 <Input
+                                    style={{color:theme.text}}
                                     value={value}
                                     onChangeText={onChange}
                                     placeholder='Data de criação ou execução' mask={{
@@ -100,11 +136,11 @@ export function OpenModal() {
                         <Controller 
                             name='taskDescription'
                             control={control}
-                            render={({field:{value, onChange}}) => <TextInput style={s.textArea} multiline placeholder='Descrição da tarefa' value={value} onChangeText={onChange} placeholderTextColor={colors.gray[400]} />}
+                            render={({field:{value, onChange}}) => <TextInput style={[s.textArea, {color:theme.text}]} multiline placeholder='Descrição da tarefa' value={value} onChangeText={onChange} placeholderTextColor={colors.gray[400]} />}
                         />
                         {errors.taskDescription && <Text style={{color:colors.red[600], textAlign:'center', fontFamily:fontFamily.bold}}>{errors.taskDescription.message}</Text>}
                         
-                        <Button isLoading={loading} onPress={handleSubmit(handleCreateTask)}>
+                        <Button isLoading={isPending} onPress={handleSubmit((data) => createTask(data))}>
                             <Button.Title>Enviar</Button.Title>
                         </Button>
                     </View>

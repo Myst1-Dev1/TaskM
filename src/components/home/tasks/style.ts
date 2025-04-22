@@ -5,8 +5,8 @@ export const s = StyleSheet.create({
     container: {
         marginTop:30,
         borderRadius:12,
-        backgroundColor:colors.gray[100],
         padding:12,
+        width:'100%',
         flexDirection:'column',
         gap:12
     },

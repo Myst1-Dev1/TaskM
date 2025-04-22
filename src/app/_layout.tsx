@@ -12,6 +12,7 @@ import {
  } from '@expo-google-fonts/karla';
 import { Loading } from '@/components/loading';
 import { queryClient } from '@/services/queryClient';
+import { ThemeProvider } from '@/hooks/useThemeMode';
 
 export default function Layout() {
     const [fontsLoaded] = useFonts({
@@ -26,16 +27,18 @@ export default function Layout() {
 
     return (
         <>
-            <QueryClientProvider client={queryClient}>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                    <Stack 
-                    screenOptions={{ 
-                        headerShown: false, 
-                        contentStyle: { backgroundColor: "#fff" } 
-                    }} 
-                    />
-                </GestureHandlerRootView>
-            </QueryClientProvider>
+            <ThemeProvider>
+                <QueryClientProvider client={queryClient}>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                        <Stack 
+                        screenOptions={{ 
+                            headerShown: false, 
+                            contentStyle: { backgroundColor: "#fff" } 
+                        }} 
+                        />
+                    </GestureHandlerRootView>
+                </QueryClientProvider>
+            </ThemeProvider>
 
         </>
     )

@@ -3,8 +3,10 @@ import { Calendar as Day, LocaleConfig } from 'react-native-calendars';
 import { s } from "./styles";
 
 import { useState } from "react";
-import { TasksType } from "@/app/home";
 import { Tasks } from "../tasks";
+import { useTasks } from "@/hooks/useTasks";
+import { TaskSkeleton } from "../taskSkeleton";
+import { useThemeMode } from "@/hooks/useThemeMode";
 
 LocaleConfig.locales['pt'] = {
     monthNames: [
@@ -18,23 +20,21 @@ LocaleConfig.locales['pt'] = {
   };
   LocaleConfig.defaultLocale = 'pt';
 
-interface CalendarProps {
-    tasks: TasksType[] | any;
-    isLoading: boolean;
-}
-
-export function Calendar({ tasks, isLoading }:CalendarProps) {
+export function Calendar() {
     const [selectedDate, setSelectedDate] = useState(() => {
         const today = new Date();
-        return today.toISOString().split('T')[0]; // formato '2025-04-21'
+        return today.toISOString().split('T')[0];
     });
+
+    const { tasks, isFetching } = useTasks();
+    const { theme, mode } = useThemeMode();
     
-    const filteredTasks = tasks.filter((task:any) => {
-        const taskDate = task.createdAt.split('/').reverse().join('-'); // de "20/04/2025" → "2025-04-20"
+    const filteredTasks = tasks?.filter((task:any) => {
+        const taskDate = task.createdAt.split('/').reverse().join('-');
         return taskDate === selectedDate;
     });
 
-    const markedDates = tasks.reduce((acc:any, task:any) => {
+    const markedDates = tasks?.reduce((acc:any, task:any) => {
         const taskDate = task.createdAt.split('/').reverse().join('-');
       
         if (!acc[taskDate]) {
@@ -46,30 +46,39 @@ export function Calendar({ tasks, isLoading }:CalendarProps) {
         return acc;
       }, {} as Record<string, any>);
       
-      // Garante que o dia selecionado esteja marcado em verde
-      markedDates[selectedDate] = {
-        ...(markedDates[selectedDate] || {}),
+      const safeMarkedDates = markedDates || {};
+
+      safeMarkedDates[selectedDate] = {
+        ...(safeMarkedDates[selectedDate] || {}),
         selected: true,
         selectedColor: '#22C55E',
-    };      
+      };
 
     return (
         <>
-            <View style={s.container}>
-            <Day
-                onDayPress={(day: any) => {
-                    setSelectedDate(day.dateString);
-                }}
-                markedDates={markedDates}
-                markingType="multi-dot" // <- importante para exibir pontinhos
-                theme={{
-                    selectedDayBackgroundColor: '#22C55E',
-                    todayTextColor: '#22C55E',
-                    arrowColor: '#22C55E',
-                }}
-            />
+          <View style={[s.container, { backgroundColor: theme.background, flex: 1 }]} >
+              {/* <View style={{flexDirection:'row', justifyContent:'flex-end', alignItems:'flex-end'}}>
+                <IconCalendar onPress={() => setIsExpanded(!isExpanded)} size={25} color={colors.gray[400]} />
+              </View> */}
+              <Day
+                  style={{marginTop:10}}
+                  key={theme.background}
+                  onDayPress={(day: any) => {
+                      setSelectedDate(day.dateString);
+                  }}
+                  markedDates={safeMarkedDates}
+                  markingType="multi-dot"
+                  theme={{
+                      selectedDayBackgroundColor: '#22C55E',
+                      todayTextColor: '#22C55E',
+                      arrowColor: '#22C55E',
+                      dayTextColor: theme.text,
+                      monthTextColor: theme.text,
+                      calendarBackground: theme.background,
+                  }}
+              />
+                {isFetching ? <TaskSkeleton data = {filteredTasks} /> : <Tasks tasks={filteredTasks} />}
             </View>
-            {isLoading ? 'Carregando...' : <Tasks tasks={filteredTasks} />}
         </>
     )
 }
