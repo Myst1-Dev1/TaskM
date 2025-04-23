@@ -5,7 +5,7 @@ import { useThemeMode } from '@/hooks/useThemeMode';
 import { colors } from '@/styles/theme';
 
 export function NotificationModal() {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const { theme } = useThemeMode();
 
   useEffect(() => {

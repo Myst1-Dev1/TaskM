@@ -16,7 +16,7 @@ type InputProps = Omit<TextInputProps, 'type'> & {
 export function Input({ icon: Icon, mask, ...rest }: InputProps) {
   return (
     <View style={s.container}>
-      {Icon && <Icon size={25} color={colors.gray[400]} />}
+      {Icon && <Icon size={25} color={colors.gray[400]} style={s.icon} />}
 
       {mask ? (
         <TextInputMask

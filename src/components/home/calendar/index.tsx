@@ -27,7 +27,7 @@ export function Calendar() {
     });
 
     const { tasks, isFetching } = useTasks();
-    const { theme, mode } = useThemeMode();
+    const { theme } = useThemeMode();
     
     const filteredTasks = tasks?.filter((task:any) => {
         const taskDate = task.createdAt.split('/').reverse().join('-');
