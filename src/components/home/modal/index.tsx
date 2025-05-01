@@ -35,28 +35,29 @@ export function Modal({ isVisibleModal, setIsVisibleModal, selectedTask, setSele
     const queryClient = useQueryClient();
 
     async function scheduleTaskNotification(task: {
-        title: string;
-        date: string;
-        time:string;
-      }) {
-        const [day, month, year] = task.date.split('/').map(Number);
-        const taskDate = new Date(year, month - 1, day, 9, 0);
-      
-        if (taskDate > new Date()) {
-          await Notifications.scheduleNotificationAsync({
-            content: {
-              title: '📌 Tarefa de hoje!',
-              body: `A tarefa "${task.title}" está marcada para hoje às ${task.time}.`,
-              sound: true,
-            },
-            trigger: taskDate as unknown as Notifications.NotificationTriggerInput,
-          });
-      
-          console.log('🔔 Notificação agendada para:', taskDate);
-        } else {
-          console.log('⚠️ Data já passou ou é agora — notificação não agendada.');
-        }
+      title: string;
+      date: string;
+      time: string;
+    }) {
+      const [day, month, year] = task.date.split('/').map(Number);
+      const [hour, minute] = task.time.split(':').map(Number); // ← CORREÇÃO AQUI
+      const taskDate = new Date(year, month - 1, day, hour, minute);
+    
+      if (taskDate > new Date()) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: '📌 Tarefa de hoje!',
+            body: `A tarefa "${task.title}" está marcada para hoje às ${task.time}.`,
+            sound: true,
+          },
+          trigger: taskDate as unknown as Notifications.NotificationTriggerInput,
+        });
+    
+        console.log('🔔 Notificação agendada para:', taskDate);
+      } else {
+        console.log('⚠️ Data já passou ou é agora — notificação não agendada.');
       }
+    }  
 
     const { mutate: createTask, isPending } = useMutation({
       mutationFn: async (data: any) => {
