@@ -32,5 +32,6 @@ export const modalSchema = z.object({
     taskTitle: string({required_error:"O nome da tarefa é obrigatório"}).min(1,"Preencha este campo."),
     taskType: string({required_error:"O tipo da tarefa é obrigatório"}).min(1,'Preencha este campo'),
     taskDate: string({required_error:"A data da tarefa é obrigatório"}).min(10,"Data invalida"),
+    taskTime: string({required_error:"A data da tarefa é obrigatório"}).min(5,"Hora invalida"),
     taskDescription: string({required_error:'A descrição da tarefa é obrigatória'}).min(1,'Preencha este campo')
 })

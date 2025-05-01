@@ -13,6 +13,10 @@ import {
 import { Loading } from '@/components/loading';
 import { queryClient } from '@/services/queryClient';
 import { ThemeProvider } from '@/hooks/useThemeMode';
+import { auth } from '@/services/firebase';
+import { router } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
+import { useEffect, useState } from "react";
 
 export default function Layout() {
     const [fontsLoaded] = useFonts({
@@ -23,7 +27,22 @@ export default function Layout() {
         Karla_700Bold
     });
 
-    if(!fontsLoaded) return <Loading />;
+    const [isAuthChecked, setIsAuthChecked] = useState(false);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (!user) {
+            router.replace("/signIn");
+          } else {
+            router.replace("/home");
+            setIsAuthChecked(true);
+          }
+        });
+      
+        return unsubscribe;
+      }, []);      
+
+      if(!fontsLoaded && !isAuthChecked) return <Loading />;
 
     return (
         <>

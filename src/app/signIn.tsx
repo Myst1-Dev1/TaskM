@@ -53,7 +53,7 @@ export default function SignIn() {
                     <Button isLoading={loading} onPress={handleSubmit(handleLogin)} style={{borderRadius:6}}>
                         <Button.Title>Entrar</Button.Title>
                     </Button>
-                    <View style={{
+                    {/* <View style={{
                         paddingHorizontal: 20,
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -69,12 +69,12 @@ export default function SignIn() {
                             ou continuar com
                         </Text>
                         <View style={{ flex: 1, height: 1, backgroundColor: '#D3D3D3' }} />
-                    </View>
-                    <View style={{flexDirection:'row', gap:20, justifyContent:'center', alignItems:'center', marginTop:30,}}>
+                    </View> */}
+                    {/* <View style={{flexDirection:'row', gap:20, justifyContent:'center', alignItems:'center', marginTop:30,}}>
                         <Image source={require('@/assets/google-logo.png')} style={{width:40, height:40, objectFit:'cover'}} />
                         <Image source={require('@/assets/apple-logo.png')} style={{width:40, height:40, objectFit:'cover'}} />
                         <Image source={require('@/assets/facebook-logo.png')} style={{width:40, height:40, objectFit:'cover'}} />
-                    </View>
+                    </View> */}
                     <Text style={{textAlign:'center', fontFamily:fontFamily.regular}}>Não possui uma conta? <Text onPress={() => router.navigate('/signUp')} style={{fontFamily:fontFamily.bold, color:colors.green[600]}}>Cadastro</Text></Text>
                 </View>
             </View>

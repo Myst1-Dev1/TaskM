@@ -8,7 +8,7 @@ import { colors } from "@/styles/theme";
 type InputProps = Omit<TextInputProps, 'type'> & {
   icon?: React.ComponentType<TablerIconProps>;
   mask?: {
-    type: 'cpf' | 'cel-phone' | 'datetime' | 'custom';
+    type: 'cpf' | 'cel-phone' | 'datetime';
     options?: TextInputMaskOptionProp;
   };
 };

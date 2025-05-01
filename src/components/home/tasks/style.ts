@@ -8,7 +8,8 @@ export const s = StyleSheet.create({
         padding:12,
         width:'100%',
         flexDirection:'column',
-        gap:12
+        gap:12,
+        position:'relative'
     },
     check: {
         width:40,
@@ -28,7 +29,8 @@ export const s = StyleSheet.create({
     },
     title: {
         fontSize:16,
-        fontFamily:fontFamily.bold
+        fontFamily:fontFamily.bold,
+        maxWidth:275
     },
     description: {
         fontSize:12,
@@ -48,5 +50,20 @@ export const s = StyleSheet.create({
         fontSize:10,
         fontFamily:fontFamily.regular,
         color:colors.gray[600]
-    }
+    },
+    actionsContainer:{
+        marginTop:30,
+        flexDirection:'row',
+        justifyContent:'space-between'
+    },
+    iconAction: {
+        backgroundColor:colors.green[500],
+        padding:8,
+        borderRadius:8,
+        width: 30,
+        height:30,
+        display:'flex',
+        justifyContent:'center',
+        alignItems:'center'
+    },
 })

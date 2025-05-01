@@ -11,16 +11,16 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#16A34A"
     },
     "ios": {
       "supportsTablet": true
     },
-   "android": {
+    "android": {
       "package": "com.taskM.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#16A34A"
       }
     },
     "web": {
@@ -34,6 +34,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "09ed29d2-ae1a-4ced-ac48-b06f22627319"
+      }
+    },
+    "owner": "myst1"
   }
 }
