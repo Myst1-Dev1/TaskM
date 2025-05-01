@@ -13,10 +13,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { modalSchema } from '@/services/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import * as Notifications from 'expo-notifications';
 import { IconX } from "@tabler/icons-react-native";
 import { useEffect } from "react";
 import { TasksType } from "@/@types/tasks";
+
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 interface ModalProps {
     isVisibleModal:boolean;
@@ -34,31 +43,73 @@ export function Modal({ isVisibleModal, setIsVisibleModal, selectedTask, setSele
 
     const queryClient = useQueryClient();
 
+    // async function scheduleTaskNotification(task: {
+    //   title: string;
+    //   date: string;
+    //   time: string;
+    // }) {
+    //   const [day, month, year] = task.date.split('/').map(Number);
+    //   const [hour, minute] = task.time.split(':').map(Number); // ← CORREÇÃO AQUI
+    //   const taskDate = new Date(year, month - 1, day, hour, minute);
+    
+    //   if (taskDate > new Date()) {
+    //     await Notifications.scheduleNotificationAsync({
+    //       content: {
+    //         title: '📌 Tarefa de hoje!',
+    //         body: `A tarefa "${task.title}" está marcada para hoje às ${task.time}.`,
+    //         sound: true,
+    //       },
+    //       trigger: {
+    //         date: taskDate,
+    //         channelId: 'taskm-default', // <- cria esse canal antes se quiser mais controle
+    //       },
+    //     });        
+    
+    //     console.log('Agendado para:', taskDate.toLocaleString());
+    //   } else {
+    //     console.log('⚠️ Data já passou ou é agora — notificação não agendada.');
+    //   }
+    // }  
+
     async function scheduleTaskNotification(task: {
       title: string;
       date: string;
       time: string;
     }) {
       const [day, month, year] = task.date.split('/').map(Number);
-      const [hour, minute] = task.time.split(':').map(Number); // ← CORREÇÃO AQUI
+      const [hour, minute] = task.time.split(':').map(Number);
+    
       const taskDate = new Date(year, month - 1, day, hour, minute);
     
       if (taskDate > new Date()) {
+        // Cria canal se necessário (recomenda-se fazer isso globalmente, mas aqui também funciona)
+        const existingChannels = await Notifications.getNotificationChannelsAsync();
+        const hasChannel = existingChannels.some((ch) => ch.id === 'taskm-default');
+    
+        if (!hasChannel) {
+          await Notifications.setNotificationChannelAsync('taskm-default', {
+            name: 'Tarefas',
+            importance: 4, // HIGH
+            sound: 'default',
+          });
+        }
+    
+        // Agenda notificação
         await Notifications.scheduleNotificationAsync({
           content: {
             title: '📌 Tarefa de hoje!',
             body: `A tarefa "${task.title}" está marcada para hoje às ${task.time}.`,
             sound: true,
           },
-          trigger: taskDate as unknown as Notifications.NotificationTriggerInput,
+          trigger: taskDate as unknown as Notifications.NotificationTriggerInput, // ← aqui está a chave
         });
     
-        console.log('🔔 Notificação agendada para:', taskDate);
+        console.log('🔔 Notificação agendada para:', taskDate.toLocaleString());
       } else {
         console.log('⚠️ Data já passou ou é agora — notificação não agendada.');
       }
-    }  
-
+    }
+    
     const { mutate: createTask, isPending } = useMutation({
       mutationFn: async (data: any) => {
         const user = auth.currentUser;
@@ -155,6 +206,12 @@ export function Modal({ isVisibleModal, setIsVisibleModal, selectedTask, setSele
                 createdAt: data.taskDate,
                 timeOfDay: data.taskTime,
               },
+            });
+
+            await scheduleTaskNotification({
+              title: data.taskTitle,
+              date: data.taskDate,
+              time: data.taskTime
             });
           } else {
             createTask(data);

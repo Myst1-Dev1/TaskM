@@ -40,8 +40,8 @@ export default function Layout() {
         });
       
         return unsubscribe;
-      }, []);      
-
+      }, []);   
+      
       if(!fontsLoaded && !isAuthChecked) return <Loading />;
 
     return (
